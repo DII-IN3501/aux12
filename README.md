@@ -22,7 +22,7 @@ NOTA IMPORTANTE: Al final del arreglo de `urlspatterns` hemos añadido ` + stati
 
 ## Crear los modelos
 El primer paso siempre es el de crear los modelos correspondientes al Modelo Entidad Relación:
-![](MER.png)
+![](aux11.png)
 
 ### Crear campos personalizados para cada usuario
 El modelo de `User` de django no trae algunos campos que podremos necesitar para un usuario. Es por esto que creamos un modelo llamado `Cliente` en `userApp/models.py` con los campos que necesitaremos:
