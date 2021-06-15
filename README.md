@@ -24,6 +24,11 @@ NOTA IMPORTANTE: Al final del arreglo de `urlspatterns` hemos añadido ` + stati
 El primer paso siempre es el de crear los modelos correspondientes al Modelo Entidad Relación:
 ![](aux11.png)
 
+## Realizar mock-ups
+Es importante, antes de lazarse a programar un proyecto, tener en cuenta las interacciones y cómo se deberían mostrar al usuario. Es por esto, que el paso siguiente es realizar bosquejos de mock-ups para la aplicación. Basta con un dibujo para entender qué es lo que debemos hacer.
+![](m1.png)
+![](m2.png)
+
 ### Crear campos personalizados para cada usuario
 El modelo de `User` de django no trae algunos campos que podremos necesitar para un usuario. Es por esto que creamos un modelo llamado `Cliente` en `userApp/models.py` con los campos que necesitaremos:
 
@@ -247,5 +252,177 @@ urlpatterns = [
     path('login/', loginView, name="login"),
     path('auth/', auth, name='auth'),
     path('logout/', logoutView, name='logout')
+]
+```
+
+### Views, templates y urls relacionadas a la aplicación
+#### mainApp/templates/mainApp/*
+En base a los mock-ups, construimos los templates asociados a esta funcionalidad:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizzas</title>
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    {% bootstrap_messages %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Logo</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link active" href="{% url 'index' %}">Bievenida <span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link" href="{% url 'register' %}">Registro</a>
+        </div>
+    </div>
+</nav>
+
+<h1>Pide tu Pizza!!11</h1>
+
+
+{% if user.is_authenticated %}
+    <br><a href="{% url 'logout' %}">Cerrar sesión</a><br>
+
+    <form method="POST" action="{% url 'pedir' %}">
+        {% csrf_token %}
+        <table class="table">
+        {% for pizza in pizzas %}
+            <tr>
+                <td><img src="{{ pizza.imagen.url }}" width="200"></td>
+                <td>{{ pizza.nombre }}</td>
+                <td>{{ pizza.descripcion }}</td>
+                <td><input type="number" name="pizza-{{ pizza.id }}" value=0></td>
+                <td><select name="tamano-{{ pizza.id }}">
+                    <option value="M">Mediana</option>
+                    <option value="L">Familiar</option>
+                    <option value="XL">XL</option>
+                </select></td>
+            </tr>
+        {% endfor %}
+        </table>
+        <input type="submit" value="Enviar">
+    </form>
+
+{% else %}
+    <br> Debes <a href="{% url 'login' %}">iniciar sesión</a> para pedir una pizza
+
+{% endif %}
+
+
+</body>
+</html>
+```
+(mainApp/index.html)
+
+TODO: Explicación formulario
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizzas</title>
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    {% bootstrap_messages %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Logo</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link active" href="{% url 'index' %}">Bievenida <span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link" href="{% url 'register' %}">Registro</a>
+        </div>
+    </div>
+</nav>
+
+<h1>Pedidos</h1>
+
+
+{% if user.is_authenticated %}
+    <br><a href="{% url 'logout' %}">Cerrar sesión</a><br>
+
+    {% for pedido in pedidos %}
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">Pedido #{{ pedido.id }}</h5>
+                {% for carrito in pedido.carritos.all %}
+                    <p class="card-text">{{ carrito.pizza }}<br>
+                    {{ carrito.tamano }}<br>
+                    x{{ carrito.cantidad }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+{% else %}
+    <br> Debes <a href="{% url 'login' %}">iniciar sesión</a> para ver los pedidos.
+
+{% endif %}
+
+
+</body>
+</html>
+```
+(mainApp/pedidos.html)
+
+#### views.py
+```python
+from django.shortcuts import render
+from mainApp.models import Pizza, Pedido, Carrito
+
+def index(request):
+    context = {"pizzas": Pizza.objects.all()}
+    return render(request, 'mainApp/index.html', context)
+
+def pedir(request):
+    pedido = Pedido(cliente=request.user.cliente)
+    pedido.save()
+
+    for k in request.POST:
+        if k.startswith('pizza-'):
+            pizza_id = int(k[6:]) # Extraemos solo el número de pizza-n y lo convertimos a entero. Ej: "pizza-4" -> 4
+            cantidad = int(request.POST[k]) # Convertimos a entero esta cantidad
+            tamano = request.POST["tamano-"+str(pizza_id)] # Extraemos el tamaño de la pizza por su ID.
+
+            carrito = Carrito(pedido=pedido,
+                              pizza=Pizza.objects.get(id=pizza_id),
+                              cantidad=cantidad,
+                              tamano=tamano)
+            carrito.save()
+
+    #context = {"pizzas": Pizza.objects.all()}
+    #return render(request, 'mainApp/index.html', context)
+    return index(request)
+
+def pedidos(request):
+    listapedidos = Pedido.objects.filter(cliente=request.user.cliente)
+
+    context = {"pedidos": listapedidos}
+    return render(request, 'mainApp/pedidos.html', context)
+
+```
+TODO: Explicar obtención del formulario
+
+#### urls.py
+```python
+from mainApp.views import index, pedir, pedidos
+
+urlpatterns = [
+    path('', index, name="index"),
+    path('pedir/', pedir, name="pedir"),
+    path('pedidos/', pedidos, name="pedidos"),
 ]
 ```
