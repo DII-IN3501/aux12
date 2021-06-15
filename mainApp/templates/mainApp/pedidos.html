@@ -22,34 +22,27 @@
     </div>
 </nav>
 
-<h1>Pide tu Pizza!!11</h1>
+<h1>Pedidos</h1>
 
 
 {% if user.is_authenticated %}
     <br><a href="{% url 'logout' %}">Cerrar sesión</a><br>
 
-    <form method="POST" action="{% url 'pedir' %}">
-        {% csrf_token %}
-        <table class="table">
-        {% for pizza in pizzas %}
-            <tr>
-                <td><img src="{{ pizza.imagen.url }}" width="200"></td>
-                <td>{{ pizza.nombre }}</td>
-                <td>{{ pizza.descripcion }}</td>
-                <td><input type="number" name="pizza-{{ pizza.id }}" value=0></td>
-                <td><select name="tamano-{{ pizza.id }}">
-                    <option value="M">Mediana</option>
-                    <option value="L">Familiar</option>
-                    <option value="XL">XL</option>
-                </select></td>
-            </tr>
-        {% endfor %}
-        </table>
-        <input type="submit" value="Enviar">
-    </form>
+    {% for pedido in pedidos %}
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+                <h5 class="card-title">Pedido #{{ pedido.id }}</h5>
+                {% for carrito in pedido.carritos.all %}
+                    <p class="card-text">{{ carrito.pizza }}<br>
+                    {{ carrito.tamano }}<br>
+                    x{{ carrito.cantidad }}</p>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
 
 {% else %}
-    <br> Debes <a href="{% url 'login' %}">iniciar sesión</a> para pedir una pizza
+    <br> Debes <a href="{% url 'login' %}">iniciar sesión</a> para ver los pedidos.
 
 {% endif %}
 

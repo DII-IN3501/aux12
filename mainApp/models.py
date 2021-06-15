@@ -6,6 +6,9 @@ class Pizza(models.Model):
     descripcion = models.TextField(null=True)
     imagen = models.ImageField(upload_to="pizza-img/")
 
+    def __str__(self):
+        return self.nombre
+
 class Pedido(models.Model):
     fechahora = models.DateTimeField(auto_now=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
@@ -16,7 +19,7 @@ class Ingrediente(models.Model):
 
 # Relaciones
 class Carrito(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='carritos')
     pizza = models.ForeignKey(Pizza, on_delete=models.CASCADE)
     cantidad = models.IntegerField(default=1)
     tamano = models.CharField(max_length=15, choices=(("M", "Mediana"),
