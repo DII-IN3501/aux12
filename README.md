@@ -3,6 +3,12 @@
 ## Crear aplicaciones
 Una vez clonado el repositorio base de la tarea 3, en este ejemplo se crean dos aplicaciones: `userApp` y `mainApp`. La aplicación de `userApp` servirá para manejar todo lo relacionado con la autenticación y sistema de usuarios del proyecto. En `mainApp` realizaremos todo lo relacionado con el proyecto en sí.
 
+```python
+python manage.py startApp mainApp
+python manage.py startApp userApp
+```
+No olvidar agregar las aplicaciones al `INSTALLED_APPS` del `settings.py`.
+
 Podemos aprovechar de integrar desde ya las rutas en el `tarea3/urls.py`:
 ```python
 from django.contrib import admin
@@ -18,7 +24,13 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 ```
 
-NOTA IMPORTANTE: Al final del arreglo de `urlspatterns` hemos añadido ` + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`. Esto permite que las imágenes que carguemos a los `models.ImageField` sean accesibles desde cualquier parte del proyecto.
+NOTA IMPORTANTE 1: Al final del arreglo de `urlspatterns` hemos añadido ` + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)`. Esto permite que las imágenes que carguemos a los `models.ImageField` sean accesibles desde cualquier parte del proyecto.
+
+NOTA IMPORTANTE 2: Si trabajaremos con `models.ImageFiled` tambien debemos instalar la libreria de `Pillow`:
+```python
+pip install Pillow
+pip freeze > requirements.txt
+```
 
 ## Crear los modelos
 El primer paso siempre es el de crear los modelos correspondientes al Modelo Entidad Relación:
@@ -321,7 +333,12 @@ En base a los mock-ups, construimos los templates asociados a esta funcionalidad
 ```
 (mainApp/index.html)
 
-TODO: Explicación formulario
+Aquí construimos un formulario "de forma manual" ya que no hay forma sencilla de construir un formulario ocupando los `Forms` de django. En esta vista, le estamos pasando a través del *contexto* un objeto llamado `pizzas`, el cual es un arreglo que contiene a todas las pizzas registradas en la base de datos. Es posible iterar sobre este arreglo usando la etiqueta `{% for pizza in pizzas %}` teniendo así por cada pasada del *for* el objeto de una pizza.
+
+Luego, para mostrar algún atributos del objeto de una pizza, lo podemos hacer mediante la etiqueta `{{ pizza.nombre }}`, donde este sería el caso en que quisieramos obtener el atributo `nombre` del objeto `Pizza`.
+
+En este formulario, donde indicamos que ingresen la cantidad y el tamaño de las pizzas, creamos dos inputs: Uno del tipo `number` y otro un `select` con las distintas opciones de tamaños de pizzas. En este caso, como estamos iterando dentro de un for, se crearán dos imputs por cada pizza en el menú, teniendo cada input un `name` propio asociado a la pizza: Por ejemplo, la pizza con id 1, el formulario tendra el input de la cantidad con el parámetro `name=pizza-1` y el select asociado a su tamaño con el parámetro `name=tamano-1`.
+
 
 ```html
 <!DOCTYPE html>
@@ -414,7 +431,7 @@ def pedidos(request):
     return render(request, 'mainApp/pedidos.html', context)
 
 ```
-TODO: Explicar obtención del formulario
+En la vista `pedir` estamos procesando los datos capturados por el formulario de pizzas. En palabras sencillas, lo que estamos haciendo acá es crear un nuevo `Pedido` al cual le vamos a asociar un `Carrito` por cada cantidad y tamaño de pizza ingresado en el formulario. Para crear un `Carrito` por cada pizza, iteramos todos los parámetros entregados en la `request` por POST y buscamos aquellos que en el nombre empiecen con `pizza-` para así poder extraer la id de la pizza asociada a este input del formulario. Extraemos también su tamaño para finalmente poder crear un `Carrito` asociado al `Pedido` recien creado.
 
 #### urls.py
 ```python
