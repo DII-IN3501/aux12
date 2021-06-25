@@ -443,3 +443,119 @@ urlpatterns = [
     path('pedidos/', pedidos, name="pedidos"),
 ]
 ```
+## Actualización 2021-06-24
+Queremos agregar una funcionalidad de reserva de mesas en nuestra pizzería. Los pasos siguientes describen el cómo poder implementar esta funcionalidad.
+
+### Modelos
+Primero partimos creando los modelos en `mainApp/models.py` que permitirán reservar mesas por horarios:
+```python
+class Mesa(models.Model):
+    # Consideraremos el id como el número de la mesa
+    ubicacion = models.CharField(max_length=15, choices=(("1P", "Primer Piso"),
+                                                         ("2P", "Segundo Piso")))
+
+class Reserva(models.Model):
+    mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE, related_name='mesas')
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='clientes')
+    horario = models.DateTimeField()
+```
+
+### Formulario
+Creamos un formulario en `mainApp/forms.py` que pida horario y mesa a reservar. No pide el usuario a reservar, porque este objeto se encuentra dentro del `request`:
+```python
+from django import forms
+
+class ReservaForm(forms.Form):
+    horario = forms.DateTimeField(widget=forms.DateTimeInput(attrs={
+        'type': 'datetime-local',
+    })
+    )
+    mesa = forms.IntegerField(min_value=1, max_value=3) # Asumimos que existen solo 3 mesas en el local 
+```
+
+NOTA: Notar que al `forms.DateTimeField` le agregamos un parámetro de `widget` el cual nos permitirá en algunos navegadores seleccionar la Hora y Fecha. En caso en que no funcione en el navagador, el formato a ingresar es `AAAA-MM-DD HH:MM` como texto.
+
+### Views
+Luego creamos las dos vistas que necesitamos en el `mainApp/views.py`: Una para mostrar el formulario y otra para capturar la información del formulario:
+
+```python
+def reservaView(request):
+    form = ReservaForm()
+    return render(request, 'mainApp/reserva.html', {'form': form})
+
+def reservar(request):
+    cliente = request.user.cliente
+    mesa = request.POST['mesa']
+    horario = request.POST['horario']
+
+    reserva = Reserva(cliente=cliente,
+                      mesa=Mesa.objects.get(id=int(mesa)),
+                      horario=horario)
+
+    reserva.save()
+
+    return index(request)
+```
+
+### Template
+Creamos el template para mostrar el formulario:
+```html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizzas</title>
+    {% load bootstrap4 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript jquery='full' %}
+    {% bootstrap_messages %}
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Logo</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+            <a class="nav-item nav-link" href="{% url 'index' %}">Bievenida</a>
+            <a class="nav-item nav-link active" href="{% url 'reservaView' %}">Reservar Mesa</a>
+            {% if user.is_authenticated %}
+            <a class="nav-item nav-link" href="{% url 'pedidos' %}">Mis Pedidos</a>
+            <a class="nav-item nav-link" href="{% url 'logout' %}">Cerrar Sesión</a>
+            {% else %}
+            <a class="nav-item nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+            <a class="nav-item nav-link" href="{% url 'register' %}">Registro</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<h1>Reserva tu hora</h1>
+
+{% if user.is_authenticated %}
+<div class="container">
+    <form action="{% url 'reservar' %}" method="POST">
+        {% csrf_token %}
+
+        {% bootstrap_form form %}
+
+        <input type="submit" value="Enviar">
+    </form>
+</div>
+{% else %}
+    <br> Debes <a href="{% url 'login' %}">iniciar sesión</a> para reservar una hora.
+{% endif %}
+
+</body>
+</html> 
+```
+Finalmente, agregamos las rutas al `urlspatterns` en el `mainApp/urls.py`:
+```python
+urlpatterns = [
+    ...
+    path('reserva/', reservaView, name="reservaView"),
+    path('reservar/', reservar, name="reservar"),
+]
+```
