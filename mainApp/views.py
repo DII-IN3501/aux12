@@ -1,5 +1,7 @@
 from django.shortcuts import render
-from mainApp.models import Pizza, Pedido, Carrito
+from mainApp.models import Pizza, Pedido, Carrito, Reserva, Mesa
+
+from mainApp.forms import ReservaForm
 
 def index(request):
     context = {"pizzas": Pizza.objects.all()}
@@ -30,3 +32,21 @@ def pedidos(request):
 
     context = {"pedidos": listapedidos}
     return render(request, 'mainApp/pedidos.html', context)
+
+# Actualización
+def reservaView(request):
+    form = ReservaForm()
+    return render(request, 'mainApp/reserva.html', {'form': form})
+
+def reservar(request):
+    cliente = request.user.cliente
+    mesa = request.POST['mesa']
+    horario = request.POST['horario']
+
+    reserva = Reserva(cliente=cliente,
+                      mesa=Mesa.objects.get(id=int(mesa)),
+                      horario=horario)
+
+    reserva.save()
+
+    return index(request)

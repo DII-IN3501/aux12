@@ -23,9 +23,22 @@ class Carrito(models.Model):
     pizza = models.ForeignKey(Pizza, on_delete=models.CASCADE)
     cantidad = models.IntegerField(default=1)
     tamano = models.CharField(max_length=15, choices=(("M", "Mediana"),
-                                       ("L", "Familiar"),
-                                       ("XL", "XL")))
+                                                      ("L", "Familiar"),
+                                                      ("XL", "XL")))
 
 class IngredientePizza(models.Model):
     pizza = models.ForeignKey(Pizza, on_delete=models.CASCADE)
     ingrediente = models.ForeignKey(Ingrediente, on_delete=models.CASCADE)
+
+
+# Actualización
+
+class Mesa(models.Model):
+    # Consideraremos el id como el número de la mesa
+    ubicacion = models.CharField(max_length=15, choices=(("1P", "Primer Piso"),
+                                                         ("2P", "Segundo Piso")))
+
+class Reserva(models.Model):
+    mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE, related_name='mesas')
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE, related_name='clientes')
+    horario = models.DateTimeField()
