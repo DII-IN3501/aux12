@@ -10,11 +10,11 @@ class Pizza(models.Model):
         return "Pizza {}: {} -- {}".format(self.id, self.nombre, self.descripcion)
 
 class Pedido(models.Model):
-    fechahora = models.DateTimeField(auto_now=True)
+    fechahora = models.DateTimeField()
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
 
     def __str__(self):
-        return "Pedido N°{} -- {}".format(self.id, fechahora)
+        return "Pedido N°{} -- {}".format(self.id, self.fechahora)
 
 class Ingrediente(models.Model):
     nombre = models.CharField(max_length=255)

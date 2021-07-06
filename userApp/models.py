@@ -7,4 +7,4 @@ class Cliente(models.Model):
     direccion = models.CharField(max_length=255)
 
     def __str__(self):
-        "{}: {} {}".format(self.user.username, self.user.first_name, self.user.last_name)
+        return "{}: {} {}".format(self.user.username, self.user.first_name, self.user.last_name)
