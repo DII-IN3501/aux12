@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from mainApp.models import Pizza, Ingrediente, Pedido, Carrito, Reserva, Mesa
+from userApp.models import Cliente
 
 from mainApp.forms import ReservaForm
 
