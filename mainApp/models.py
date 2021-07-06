@@ -7,15 +7,21 @@ class Pizza(models.Model):
     imagen = models.ImageField(upload_to="pizza-img/")
 
     def __str__(self):
-        return self.nombre
+        return "Pizza {}: {} -- {}".format(self.id, self.nombre, self.descripcion)
 
 class Pedido(models.Model):
     fechahora = models.DateTimeField(auto_now=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return "Pedido N°{} -- {}".format(self.id, fechahora)
+
 class Ingrediente(models.Model):
     nombre = models.CharField(max_length=255)
     proveedor = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.nombre
 
 # Relaciones
 class Carrito(models.Model):
