@@ -42,36 +42,8 @@
     </div>
 </nav>
 
-<h1>Pide tu Pizza!!11</h1>
-
-
-{% if user.is_authenticated %}
-    <br><a href="{% url 'logout' %}">Cerrar sesión</a><br>
-
-    <form method="POST" action="{% url 'pedir' %}">
-        {% csrf_token %}
-        <table class="table">
-        {% for pizza in pizzas %}
-            <tr>
-                <td><img src="{{ pizza.imagen.url }}" width="200"></td>
-                <td>{{ pizza.nombre }}</td>
-                <td>{{ pizza.descripcion }}</td>
-                <td><input type="number" name="pizza-{{ pizza.id }}" value=0></td>
-                <td><select name="tamano-{{ pizza.id }}">
-                    <option value="M">Mediana</option>
-                    <option value="L">Familiar</option>
-                    <option value="XL">XL</option>
-                </select></td>
-            </tr>
-        {% endfor %}
-        </table>
-        <input type="submit" value="Enviar">
-    </form>
-
-{% else %}
-    <br> Debes <a href="{% url 'login' %}">iniciar sesión</a> para pedir una pizza
-
-{% endif %}
+<h1>Cantidad de pedidos hechos por el usuario actual</h1>
+<h2>Cantidad de Pedidos: {{ cantidad_pedidos }}</h2>
 
 
 </body>

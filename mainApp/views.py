@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from mainApp.models import Pizza, Pedido, Carrito, Reserva, Mesa
+from mainApp.models import Pizza, Ingrediente, Pedido, Carrito, Reserva, Mesa
 
 from mainApp.forms import ReservaForm
 
@@ -50,3 +50,45 @@ def reservar(request):
     reserva.save()
 
     return index(request)
+
+def query0(request):
+    pizzas = Pizza.objects.all()
+
+    context = {"pizzas": pizzas}
+    return render(request, 'mainApp/query0.html', context)
+
+def query1(request):
+    ingredientes = []
+
+    context = {"ingredientes": ingredientes}
+    return render(request, 'mainApp/query1.html', context)
+
+def query2(request):
+    pizzas = []
+
+    context = {"pizzas": pizzas}
+    return render(request, 'mainApp/query2.html', context)
+
+def query3(request):
+    pedidos = []
+
+    context = {"pedidos": pedidos}
+    return render(request, 'mainApp/query3.html', context)
+
+def query4(request):
+    cantidad_pedidos = 0
+
+    context = {"cantidad_pedidos": cantidad_pedidos}
+    return render(request, 'mainApp/query4.html', context)
+
+def query5(request):
+    pedido = None
+
+    context = {"pedido": pedido}
+    return render(request, 'mainApp/query5.html', context)
+
+def query6(request):
+    clientes = []
+
+    context = {"clientes": clientes}
+    return render(request, 'mainApp/query6.html', context)
