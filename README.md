@@ -6,6 +6,7 @@ Para empezar, primero es necesario aplicar las migraciones y poblar la base de d
 python manage.py migrate
 python manage.py shell < population.py
 ```
+NOTA: Esto debe hacerse dentro del ambiente virtual de python con los requirements ya instalados.
 
 ## Realizando las queries
 El único archivo a editar es el `mainApp/views.py`. Hay 6 views que deben ser modificados de tal forma que el elemento que se encuentra en el contexto contenga lo que se pide.
